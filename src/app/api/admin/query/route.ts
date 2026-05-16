@@ -26,8 +26,9 @@ export async function GET() {
   const supabase = makeSupabaseAdmin()
   const { data, error } = await supabase
     .from('queries')
-    .select('*')
+    .select('*, student:students(name)')
     .order('created_at', { ascending: false })
+
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })

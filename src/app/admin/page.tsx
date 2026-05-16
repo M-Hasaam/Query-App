@@ -33,7 +33,9 @@ interface Query {
   status: 'pending' | 'approved' | 'rejected'
   admin_reply: string
   created_at: string
+  student?: { name: string }
 }
+
 
 export default function AdminDashboard() {
   const [queries, setQueries] = useState<Query[]>([])
@@ -98,7 +100,9 @@ export default function AdminDashboard() {
   const filteredQueries = queries.filter(q => {
     const matchesSearch = 
       q.roll_no.toLowerCase().includes(search.toLowerCase()) ||
-      q.title.toLowerCase().includes(search.toLowerCase())
+      q.title.toLowerCase().includes(search.toLowerCase()) ||
+      q.student?.name.toLowerCase().includes(search.toLowerCase())
+
     const matchesFilter = filter === 'all' || q.status === filter
     return matchesSearch && matchesFilter
   })
@@ -197,16 +201,21 @@ export default function AdminDashboard() {
                       </div>
                       
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2 md:gap-3 mb-1 overflow-hidden">
+                        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-3 mb-1 overflow-hidden">
+                          <span className="text-[10px] md:text-xs font-bold text-white uppercase tracking-widest flex items-center gap-1.5 shrink-0">
+                            {q.student?.name || 'Unknown Student'}
+                          </span>
+                          <div className="hidden md:block w-1 h-1 bg-slate-800 rounded-full shrink-0" />
                           <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5 shrink-0">
-                            <User className="w-3 h-3" /> {q.roll_no}
+                            <Hash className="w-3 h-3" /> {q.roll_no}
                           </span>
                           <div className="w-1 h-1 bg-slate-800 rounded-full shrink-0" />
                           <span className="text-[10px] md:text-xs font-bold text-slate-500 flex items-center gap-1.5 whitespace-nowrap">
                             <Calendar className="w-3 h-3" /> {new Date(q.created_at).toLocaleDateString()}
                           </span>
                         </div>
-                        <h3 className="text-base md:text-lg font-bold text-white truncate pr-2">{q.title}</h3>
+                        <h3 className="text-base md:text-lg font-bold text-indigo-400 truncate pr-2">{q.title}</h3>
+
                       </div>
                     </div>
 
