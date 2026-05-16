@@ -33,7 +33,7 @@ interface Query {
   status: 'pending' | 'approved' | 'rejected'
   admin_reply: string
   created_at: string
-  student?: { name: string }
+  student?: { name: string, a1: number, a2: number, a3: number }
 }
 
 
@@ -245,10 +245,22 @@ export default function AdminDashboard() {
                       className="border-t border-slate-800/50 bg-slate-950/30"
                     >
                       <div className="p-8 space-y-8">
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-4">Student Description</label>
-                          <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800/50 text-slate-300 text-sm leading-relaxed">
-                            {q.description}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-4">Student Description</label>
+                            <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800/50 text-slate-300 text-sm leading-relaxed min-h-[100px]">
+                              {q.description}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em] mb-4">Current Mark</label>
+                            <div className="bg-slate-900/50 p-6 rounded-2xl border border-indigo-500/30 flex flex-col items-center justify-center min-h-[100px] shadow-inner">
+                              <span className="text-4xl font-black text-white leading-none">
+                                {q.student?.[q.assignment_no.toLowerCase() as 'a1'|'a2'|'a3'] ?? 'N/A'}
+                              </span>
+                              <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-2">Assignment {q.assignment_no}</span>
+                            </div>
                           </div>
                         </div>
 
