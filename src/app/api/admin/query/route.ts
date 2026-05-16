@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+
+export const dynamic = 'force-dynamic'
+
 import { createServerClient } from '@supabase/ssr'
 import { sendPushNotification } from '@/lib/push'
 import { verifyAdminToken } from '@/lib/admin-session'
@@ -24,16 +27,36 @@ export async function GET() {
   }
 
   const supabase = makeSupabaseAdmin()
-  const { data, error } = await supabase
+  const { data: queries, error } = await supabase
     .from('queries')
-    .select('*, student:students(name, a1, a2, a3)')
+    .select('*')
     .order('created_at', { ascending: false })
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json(data)
+  // Fetch students directly to avoid join issues
+  const rollNos = [...new Set(queries.map(q => q.roll_no))]
+  const { data: students } = await supabase
+    .from('students')
+    .select('id, name, a1, a2, a3')
+    .in('id', rollNos)
+
+  const studentMap: Record<string, any> = {}
+  if (students) {
+    students.forEach(s => {
+      studentMap[s.id] = s
+    })
+  }
+
+  const enrichedQueries = queries.map(q => ({
+    ...q,
+    student: studentMap[q.roll_no] || null
+  }))
+
+  return NextResponse.json(enrichedQueries)
+
 }
 
 export async function PATCH(request: Request) {
