@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -41,6 +40,27 @@ interface Query {
   created_at: string
 }
 
+const mockStudent: Student = {
+  id: '1',
+  name: 'John Doe',
+  roll_number: '21I-1234',
+  a1: 150,
+  a2: 85,
+  a3: 180
+}
+
+const mockQueries: Query[] = [
+  {
+    id: 'q1',
+    assignment_no: 'A1',
+    title: 'Missing marks for Q2',
+    description: 'I think my marks for Q2 were not added to the total.',
+    status: 'pending',
+    admin_reply: '',
+    created_at: new Date().toISOString()
+  }
+]
+
 export default function Dashboard() {
   const [student, setStudent] = useState<Student | null>(null)
   const [queries, setQueries] = useState<Query[]>([])
@@ -51,12 +71,10 @@ export default function Dashboard() {
   const [timeLeft, setTimeLeft] = useState<string>('')
   const [isDeadlinePassed, setIsDeadlinePassed] = useState<boolean>(false)
   
-  const supabase = createClient()
   const router = useRouter()
 
   useEffect(() => {
     fetchData()
-    subscribeToPush()
 
     const deadline = new Date('2026-05-17T23:59:59+05:00').getTime();
 
@@ -83,26 +101,14 @@ export default function Dashboard() {
 
   const fetchData = async () => {
     setLoading(true)
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      const [studentRes, queriesRes] = await Promise.all([
-        fetch('/api/student'),
-        fetch('/api/query')
-      ])
-
-      if (studentRes.ok) setStudent(await studentRes.json())
-      if (queriesRes.ok) setQueries(await queriesRes.json())
-    } catch (err) {
-      console.error(err)
-    } finally {
+    setTimeout(() => {
+      setStudent(mockStudent)
+      setQueries(mockQueries)
       setLoading(false)
-    }
+    }, 500)
   }
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
     router.push('/login')
   }
 
@@ -111,26 +117,23 @@ export default function Dashboard() {
     if (!showQueryForm || isDeadlinePassed) return
     
     setSubmitting(true)
-    try {
-      const res = await fetch('/api/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+    setTimeout(() => {
+      setQueries(prev => [
+        {
+          id: Math.random().toString(),
           assignment_no: showQueryForm,
-          ...formData
-        })
-      })
-      
-      if (res.ok) {
-        setFormData({ title: '', description: '' })
-        setShowQueryForm(null)
-        fetchData()
-      }
-    } catch (err) {
-      console.error(err)
-    } finally {
+          title: formData.title,
+          description: formData.description,
+          status: 'pending',
+          admin_reply: '',
+          created_at: new Date().toISOString()
+        },
+        ...prev
+      ])
+      setFormData({ title: '', description: '' })
+      setShowQueryForm(null)
       setSubmitting(false)
-    }
+    }, 500)
   }
 
   if (loading) {
@@ -150,7 +153,7 @@ export default function Dashboard() {
             <LayoutDashboard className="w-5 h-5 md:w-6 md:h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-lg md:text-xl font-bold tracking-tight">Student Portal</h1>
+            <h1 className="text-lg md:text-xl font-bold tracking-tight">Student Portal (Local Test)</h1>
             <p className="text-[9px] md:text-[10px] font-bold text-indigo-400 uppercase tracking-widest leading-none">Academic Year 2024-25</p>
           </div>
         </div>
